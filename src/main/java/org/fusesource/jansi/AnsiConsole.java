@@ -243,7 +243,7 @@ public class AnsiConsole {
         try {
             // If we can detect that stdout is not a tty.. then setup
             // to strip the ANSI sequences..
-            isAtty = isTty(fd) != 0;
+            isAtty = AnsiConsoleHelper.CLibraryHelperJep424.isTty(fd) != 0;
             String term = System.getenv("TERM");
             String emacs = System.getenv("INSIDE_EMACS");
             if (isAtty && "dumb".equals(term) && emacs != null && !emacs.contains("comint")) {
@@ -327,7 +327,7 @@ public class AnsiConsole {
             processor = null;
             type = AnsiType.Native;
             installer = uninstaller = null;
-            width = () -> AnsiConsoleHelper.CLibrary.getTerminalWidth( fd );
+            width = () -> AnsiConsoleHelper.CLibraryHelperJep424.getTerminalWidth( fd );
         }
 
         AnsiMode mode;

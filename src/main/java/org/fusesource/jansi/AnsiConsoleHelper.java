@@ -15,6 +15,16 @@
  */
 package org.fusesource.jansi;
 
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.GroupLayout;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.MemorySession;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
+
 import static org.fusesource.jansi.internal.CLibrary.TIOCGWINSZ;
 import static org.fusesource.jansi.internal.CLibrary.WinSize;
 import static org.fusesource.jansi.internal.CLibrary.ioctl;
@@ -42,6 +52,49 @@ public class AnsiConsoleHelper {
         }
     }
 
+    static class CLibraryHelperJep424
+    {
+        static GroupLayout wsLayout;
+        static MethodHandle ioctl;
+        static VarHandle ws_col;
+        static MethodHandle isatty;
+        static {
+            wsLayout = MemoryLayout.structLayout(
+                    ValueLayout.JAVA_SHORT.withName("ws_row"),
+                    ValueLayout.JAVA_SHORT.withName("ws_col"),
+                    ValueLayout.JAVA_SHORT,
+                    ValueLayout.JAVA_SHORT
+            );
+            ws_col = wsLayout.varHandle( MemoryLayout.PathElement.groupElement("ws_col"));
+            Linker linker = Linker.nativeLinker();
+            ioctl = linker.downcallHandle(
+                    linker.defaultLookup().lookup("ioctl").get(),
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT,
+                            ValueLayout.JAVA_LONG, ValueLayout.ADDRESS));
+            isatty = linker.downcallHandle(
+                    linker.defaultLookup().lookup("isatty").get(),
+                    FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+        }
+
+        static short getTerminalWidth(int fd) {
+            MemorySegment segment = MemorySegment.allocateNative(wsLayout, MemorySession.openImplicit());
+            try {
+                int res = (int) ioctl.invoke(fd, TIOCGWINSZ, segment.address());
+                return (short) ws_col.get( segment );
+            } catch (Throwable e) {
+                throw new RuntimeException("Unable to ioctl(TIOCGWINSZ)", e);
+            }
+        }
+
+        static int isTty(int fd) {
+            try {
+                return (int) isatty.invoke( fd );
+            } catch (Throwable e) {
+                throw new RuntimeException("Unable to call isatty", e);
+            }
+        }
+    }
+
     static class Kernel32 {
 
         static int getTerminalWidth(long console) {
@@ -63,5 +116,9 @@ public class AnsiConsoleHelper {
         }
     }
 
+    static class Kernel32Jep424 {
+
+
+    }
 
 }

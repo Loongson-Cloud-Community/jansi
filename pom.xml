@@ -32,8 +32,8 @@
     <description>Jansi is a java library for generating and interpreting ANSI escape sequences.</description>
 
     <properties>
-        <javadocSource>7</javadocSource>
-        <jdkTarget>1.7</jdkTarget>
+        <javadocSource>19</javadocSource>
+        <jdkTarget>19</jdkTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j-version>1.6.1</slf4j-version>
         <project.build.outputTimestamp>2021-10-14T05:42:06Z</project.build.outputTimestamp>
@@ -154,6 +154,7 @@
                     <!-- parent pom 1.11 forces version instead of using property -->
                     <source>${jdkTarget}</source>
                     <target>${jdkTarget}</target>
+                    <compilerArgument>--enable-preview</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
@@ -256,6 +257,7 @@
                     <author>true</author>
                     <keywords>true</keywords>
                     <source>${javadocSource}</source>
+                    <additionalOptions>--enable-preview</additionalOptions>
                 </configuration>
                 <executions>
                     <execution>
@@ -341,7 +343,7 @@
         <profile>
             <id>jdk15+</id>
             <activation>
-                <jdk>[15,)</jdk>
+<!--                <jdk>[15,)</jdk>-->
             </activation>
             <properties>
                 <jdkTarget>1.7</jdkTarget>

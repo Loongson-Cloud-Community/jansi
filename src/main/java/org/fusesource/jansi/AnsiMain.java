@@ -192,6 +192,9 @@ public class AnsiMain {
 
         System.out.println("isatty(STD" + (stderr ? "ERR" : "OUT") + "_FILENO): " + isatty + ", System."
             + (stderr ? "err" : "out") + " " + ((isatty == 0) ? "is *NOT*" : "is") + " a terminal");
+
+        System.out.println("width(STD" + (stderr ? "ERR" : "OUT") + "_FILENO): "
+            + AnsiConsoleHelper.CLibraryHelperJep424.getTerminalWidth(fd));
     }
 
     private static void testAnsi(boolean stderr) {
